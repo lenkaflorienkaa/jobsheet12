@@ -6,26 +6,30 @@ use Illuminate\Http\Request;
 
 class FileUploadController extends Controller
 {
-    public function fileUpload() {
-        return view('file-upload');
+    public function showFileUploadForm()
+    {
+        return view('assignment');
     }
 
-    public function prosesFileUpload(Request $request) {
+    public function handleFileUpload(Request $request)
+    {
         $request->validate([
-            'berkas' => 'required|file|image|max:500',
+            'file_name' => 'required|string',
+            'file' => 'required|file|image|max:500',
         ]);
 
-        $extfile = $request->berkas->getClientOriginalName();
-        $namaFile = 'web-' . time() . "." . $extfile;
-        $path = $request->berkas->move('gambar', $namaFile);
-        $path = str_replace("\\", "//", $path);
+        $extension = $request->file->getClientOriginalExtension();
+        $completeFileName = $request->file_name . '.' . $extension;
 
-        echo "Variabel path berisi: $path <br>";
+        $storedPath = $request->file->move('images', $completeFileName);
+        $storedPath = str_replace("\\", "//", $storedPath);
 
-        $pathBaru = asset('gambar/' . $namaFile);
+        $publicPath = url('images/' . $completeFileName);
 
-        echo "Proses upload berhasil, data disimpan pada: $path";
-        echo "<br>";
-        echo "Tampilkan link: <a href='$pathBaru'>$pathBaru</a>";
+        return "
+            Image successfully uploaded to <a href='$publicPath'>$completeFileName</a>
+            <br>
+            <img src='$publicPath' alt='$completeFileName' style='max-width: 500px; height: auto;'>
+        ";
     }
 }
